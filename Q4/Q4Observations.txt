@@ -1,0 +1,6 @@
+i.rows: 47
+ii.columns: 5
+iii.ngram fingerprint: 120
+iv.GREL_brandname: if(isNull(value), "Unknown", value)
+v.GREL_highpriced: if(value > 90, 1, 0)
+vi.GREL_hasoffer: if(or(contains(toLowercase(value), "discount"), contains(toLowercase(value), "offer"), contains(toLowercase(value), "sale")), 1, 0)
