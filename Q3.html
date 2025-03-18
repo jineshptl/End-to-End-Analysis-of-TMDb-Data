@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wildlife Trafficking Incidents per Species (2015 to 2023)</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .bar {
+            stroke: black;
+        }
+        .axis-label {
+            font-size: 14px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <script src="lib/d3/d3.min.js"></script>
+    <script src="lib/d3-dsv/d3-dsv.min.js"></script>
+    <script src="lib/d3-fetch/d3-fetch.min.js"></script>
+
+    <script>
+        // Define dimensions and margins
+        const margin = { top: 50, right: 40, bottom: 60, left: 160 };
+        const width = 900 - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
+
+        // Append main SVG container
+        const svg = d3.select("body").append("svg")
+            .attr("id", "svg1")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("id", "container")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+        d3.csv("q3.csv").then(function(data) {
+            // Convert count to numeric value
+            data.forEach(d => d.count = +d.count);
+
+            const topSpecies = data.sort((a, b) => b.count - a.count).slice(0, 5);
+
+            const colorScale = d3.scaleOrdinal(d3.schemeSet3);
+
+            const xScale = d3.scaleLinear()
+                .domain([0, d3.max(topSpecies, d => d.count)])
+                .range([0, width]);
+
+            const yScale = d3.scaleBand()
+                .domain(topSpecies.map(d => d.species))
+                .range([0, height])
+                .padding(0.3); 
+
+            // Add bars to the chart
+            svg.append("g")
+                .attr("id", "bars")
+                .selectAll("rect")
+                .data(topSpecies)
+                .enter()
+                .append("rect")
+                .attr("class", "bar")
+                .attr("x", 0) 
+                .attr("y", d => yScale(d.species))
+                .attr("width", d => xScale(d.count))
+                .attr("height", yScale.bandwidth())
+                .attr("fill", (d, i) => colorScale(i));
+
+            // X-axis with fixed number of ticks
+            svg.append("g")
+                .attr("id", "x_axis")
+                .attr("transform", `translate(0, ${height})`)
+                .call(d3.axisBottom(xScale).ticks(7) 
+                .tickFormat(d3.format("d"))); 
+
+            // X-axis label
+            svg.append("text")
+                .attr("id", "x_axis_label")
+                .attr("x", width / 2)
+                .attr("y", height + margin.bottom - 10)
+                .attr("text-anchor", "middle")
+                .attr("class", "axis-label")
+                .text("Count");
+
+            // Y-axis
+            svg.append("g")
+                .attr("id", "y_axis")
+                .call(d3.axisLeft(yScale));
+
+            // Y-axis label
+            svg.append("text")
+                .attr("id", "y_axis_label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -margin.left + 15)
+                .attr("x", -height / 2)
+                .attr("text-anchor", "middle")
+                .attr("class", "axis-label")
+                .text("Species");
+
+            // Chart title
+            svg.append("text")
+                .attr("id", "title")
+                .attr("x", width / 2)
+                .attr("y", -20)
+                .attr("text-anchor", "middle")
+                .attr("class", "axis-label")
+                .text("Wildlife Trafficking Incidents per Species (2015 to 2023)");
+
+            svg.append("text")
+                .attr("id", "credit")
+                .attr("x", width)
+                .attr("y", height + margin.bottom - 5)
+                .attr("text-anchor", "end")
+                .style("font-size", "12px")
+                .text("GT Username: jpatel685");
+                
+        }).catch(error => {
+            console.log("Error loading CSV:", error);
+        });
+    </script>
+</body>
+</html>
